@@ -1,307 +1,167 @@
-// ***************************************************************************** //
-// build.gradle
-// for versioning see gradle.properties
-//
-// ***************************************************************************** //
-buildscript {
-
-    repositories {
-        jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    dependencies {
-        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
-        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.2"
-        classpath "com.wynprice.cursemaven:CurseMaven:1.2.3"
-    }
-
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.61-beta'
 }
-apply plugin: "net.minecraftforge.gradle.forge"
-apply plugin: "com.matthewprenger.cursegradle"
-apply plugin: "com.wynprice.cursemaven"
 
-// ***************************************************************************** //
-//  Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
-// ***************************************************************************** //
+version = mod_version
+group = mod_group_id
+
 repositories {
-    mavenCentral()
-    maven {
-        name = "JitPack"
-        url = 'https://jitpack.io'
-    }
-    maven {
-        name = "jei"
-        url = "http://dvs1.progwml6.com/files/maven"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "modmaven.k-4u.nl"
-    }
-    maven {
-        name = "CoFH Maven"
-        url = "http://maven.covers1624.net"
-    }
-    maven {
-        name = "MC Mod Devs"
-        url = 'http://maven.mcmoddev.com'
-    }
-    maven {
-        name = 'CurseForge'
-        url = 'https://minecraft.curseforge.com/api/maven/'
-    }
-    maven { // The One Probe, EnderIO, EnderCore
-        name 'tterrag'
-        url 'http://maven.tterrag.com/'
-    }
-    maven { // The One Probe, EnderIO, EnderCore
-        name 'tterrag2'
-        url 'http://maven2.tterrag.com/'
-    }
-    maven {
-        name "CraftTweaker, Vazkii's Botania, etc."
-        url "http://maven.blamejared.com/"
-    }
-    //maven {
-    //    name = "mobius"
-    //    url = "http://mobiusstrip.eu/maven"
-    //}
-    //maven {
-    //    name = "applecore"
-    //    url = "http://www.ryanliptak.com/maven/"
-    //}
-    //maven {
-    //    name = "tesla"
-    //    url = "http://maven.epoxide.xyz"
-    //}
-    //maven {
-    //    name = "chickenbones"
-    //    url = "http://chickenbones.net/maven/"
-    //}
-    //maven {
-    //    name = "TehNut"
-    //    url = "http://tehnut.info/maven/"
-    //}
-    //maven {
-    //    name = "ic2"
-    //    url = "http://maven.ic2.player.to/"
-    //}
-    //maven {
-    //    name = "Modmuss50"
-    //    url = "http://maven.modmuss50.me/"
-    //}
-    //ivy {
-    //    name = "CraftTweaker"
-    //    artifactPattern "https://addons-origin.cursecdn.com/files/2392/421/[module]-[revision](-[classifier]).[ext]"
-    //}
-    //maven {
-    //    name = "PrimalCore"
-    //    url = "https://maven.nmd.so"
-    //}
     mavenLocal()
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'maven'
-//apply plugin: 'git'
-//apply plugin: 'java'
-
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8 // Need this here so eclipse task generates correctly.
-compileJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+base {
+    archivesName = mod_id
 }
 
-configurations {
-    deployerJars
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    // Specify the version of NeoForge to use.
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    // This line is optional. Access Transformers are automatically detected
+    // accessTransformers.add('src/main/resources/META-INF/accesstransformer.cfg')
+
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
+    runs {
+        client {
+            client()
+
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // By default, the server will crash when no gametests are provided.
+        // The gametest system is also enabled by default for other run configs under the /test command.
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+
+            // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
+            // gameDirectory = project.file('run-data')
+
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        // applies to all the run configs above
+        configureEach {
+            // Recommended logging data for a userdev environment
+            // The markers can be added/remove as needed separated by commas.
+            // "SCAN": For mods scan.
+            // "REGISTRIES": For firing of registry events.
+            // "REGISTRYDUMP": For getting the contents of all registries.
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+
+            // Recommended logging level for the console
+            // You can set various levels here.
+            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        // define mod <-> source bindings
+        // these are used to tell the game which sources are for which mod
+        // mostly optional in a single mod project
+        // but multi mod projects should define one per mod
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
 }
 
-// http://maven.apache.org/guides/mini/guide-naming-conventions.html
-group = "${mod_group}"
-version = "${mc_version}-${mod_version}" + buildNumber()
-archivesBaseName = "${mod_name}"
+// Include resources generated by data generators.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-minecraft {
-    version = "${mc_version}" + "-" + "${forge_version}"
-    runDir = "run"
-
-    // the mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   snapshot are built nightly.
-    // stable_#            stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not allways work.
-    // simply re-run your setup task after changing the mappings to update your workspace.
-    //mappings = "snapshot_20160312"
-    mappings = "${mcp_mappings}"
-
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-
-    // Replace
-    replace '@MOD_VERSION@', "${mod_version}" + buildNumber()
-    replace '@MOD_SIGNATURE@', project.findProperty('mod_signature')
-    replaceIn 'Cyberware.java'
-}
 
 dependencies {
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
+    // Example mod dependency with JEI
+    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
+    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
+    // compileOnly "mezz.jei:jei-${mc_version}-forge-api:${jei_version}"
+    // runtimeOnly "mezz.jei:jei-${mc_version}-forge:${jei_version}"
 
-    // real examples
-    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
-    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+    // Example mod dependency using a mod jar from ./libs with a flat dir repository
+    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
+    // The group id is ignored when searching -- in this case, it is "blank"
+    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
 
-    // the 'provided' configuration is for optional dependencies that exist at compile-time but might not at runtime.
-    //provided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+    // Example mod dependency using a file as dependency
+    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
 
-    // the deobf configurations:  'deobfCompile' and 'deobfProvided' are the same as the normal compile and provided,
-    // except that these dependencies get remapped to your current MCP mappings
-    //deobfCompile 'com.mod-buildcraft:buildcraft:6.0.8:dev'
-    //deobfProvided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+    // Example project dependency using a sister or child project:
+    // implementation project(":myproject")
 
-    // for more info...
+    // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/ddependency_management.html
-
-    // SSH
-    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
-
-    // PrimalCore
-    //deobfCompile "nmd.primal.core:PrimalCore:${primal_version}:dev"
-    //runtime "nmd.primal.core:PrimalCore:${primal_version}"
-
-    // JEI
-    //  https://github.com/mezz/JustEnoughItems
-    //  http://minecraft.curseforge.com/projects/just-enough-items-jei/files
-    //  <MINECRAFT-VERSION> and <JEI-VERSION> can be found on CurseForge, check the file name of the version you want.
-    //
-    // compile against the JEI API
-    // http://dvs1.progwml6.com/files/maven/mezz/jei/jei_1.11.2/4.3.3.266/jei_1.11.2-4.3.3.266-api.jar
-    provided "mezz.jei:jei_${mc_version}:${jei_version}:api"
-    // at runtime, use the full JEI jar
-    //runtime "mezz.jei:jei_${mc_version}:${jei_version}"
-
-    // Baubles
-//    provided "com.github.azanor:baubles:-SNAPSHOT"
-
-    // Matter Overdrive 
-    // provided "matteroverdrive:MatterOverdrive-1.12.2:${MatterOverdrive_version}:universal"
-    provided curse.resolve("matteroverdrive", "${MatterOverdrive_fileid}") // "${MatterOverdrive_version}"
-
-    // EnderIO with a manual dependency to EnderCore
-//    provided "com.enderio.core:EnderCore:${mc_version}-${endercore_version}:core"
-//    provided("com.enderio:EnderIO:${mc_version}-${enderio_version}") {
-//        transitive = false
-//    }
-
-    // ToughAsNails
-    provided "tough-as-nails:ToughAsNails-1.12.2:${tan_version}:universal"
-
-    // TESLA
-    // https://github.com/Darkhax-Minecraft/Tesla/blob/master/README.md
-    provided "net.darkhax.tesla:Tesla-1.12.2:${tesla_version}"
-
-    // RF
-    provided "cofh:RedstoneFlux:1.12-2.0.2.3:universal"
-
-    // Botania
-    provided "vazkii.botania:Botania:${botania_version}"
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
-processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", "${mod_version}"
-    inputs.property "build", "${mod_build}"
-    inputs.property "mcversion", "${mc_version}"
+// This block of code expands all declared replace properties in the specified resource targets.
+// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [minecraft_version      : minecraft_version,
+                             minecraft_version_range: minecraft_version_range,
+                             neo_version            : neo_version,
+                             neo_version_range      : neo_version_range,
+                             loader_version_range   : loader_version_range,
+                             mod_id                 : mod_id,
+                             mod_name               : mod_name,
+                             mod_license            : mod_license,
+                             mod_version            : mod_version,
+                             mod_authors            : mod_authors,
+                             mod_description        : mod_description]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':"${mod_version}", 'build':"${mod_build}", 'mcversion':"${mc_version}"
+// Include the output of "generateModMetadata" as an input directory for the build
+// this works with both building through Gradle and the IDE.
+sourceSets.main.resources.srcDir generateModMetadata
+// To avoid having to run "generateModMetadata" manually, make it run on every project reload
+neoForge.ideSyncTask generateModMetadata
+
+// Example configuration to allow publishing using the maven-publish plugin
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
     }
-
-    // copy everything else, not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
     }
 }
 
-idea { module { inheritOutputDirs = true } }
-
-jar {
-    exclude "**/TODO.txt"
-    exclude "**/update-dist.json"
-    destinationDir = file 'output'
-    
-    manifest {
-        attributes FMLAT: "cyberware_at.cfg"
-    }
-}
-
-task devJar(type: Jar) {
-    from sourceSets.main.output
-    classifier = 'dev'
-}
-
-//task deobfJar(type: Jar) {
-//    from sourceSets.main.output
-//    manifest commonManifest
-//    classifier = 'deobf'
-//}
-
-task apiJar(type: Jar) {
-    from(sourceSets.main.allJava) {
-        include 'flaxbeard/cyberware/api/**'
-    }
-    from (sourceSets.main.output) {
-        //include 'LICENSE.txt'
-        include 'flaxbeard/cyberware/api/**'
-    }
-    classifier = 'api'
-}
-
-artifacts {
-    archives devJar
-    archives apiJar
-}
-
-def buildNumber() {
-    return (project.mod_build!="" && project.mod_build!="0") ? '.' + project.mod_build : ""
-}
-
-task signJar(type: SignJar, dependsOn: reobfJar) {
-    // Skip the task if our secret data isn't available
-    onlyIf {
-        project.hasProperty('keyStore')
-    }
-
-    // findProperty allows us to reference the property without it existing
-    keyStore = project.findProperty('keyStore')
-    alias = project.findProperty('keyStoreAlias')
-    storePass = project.findProperty('keyStorePass')
-    keyPass = project.findProperty('keyStoreKeyPass')
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
-}
-
-build.dependsOn signJar
-
+// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {
-        inheritOutputDirs = true
+        downloadSources = true
+        downloadJavadoc = true
     }
-}
-
-runClient {
-    jvmArgs "-Xmx2048m", "-Xms1024m", "-ea"
-}
-
-runServer {
-    jvmArgs "-Xmx2048m", "-Xms1024m", "-ea"
 }

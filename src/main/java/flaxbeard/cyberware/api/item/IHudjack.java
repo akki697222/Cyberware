@@ -1,8 +1,8 @@
 package flaxbeard.cyberware.api.item;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public interface IHudjack
 {
-	public boolean isActive(ItemStack stack);
+    boolean isActive(ItemStack stack);
 }

@@ -1,15 +1,10 @@
 package flaxbeard.cyberware.api;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
-public interface ISpecialBattery
-{
-	public int add(ItemStack battery, ItemStack power, int amount, boolean simulate);
-	
-	public int extract(ItemStack battery, int amount, boolean simulate);
-	
-	public int getStoredEnergy(ItemStack battery);
-	
-	public int getCapacity(ItemStack battery);
-
+public interface ISpecialBattery {
+    int add(ItemStack battery, ItemStack power, int amount, boolean simulate);
+    int extract(ItemStack battery, int amount, boolean simulate);
+    int getStoredEnergy(ItemStack battery);
+    int getCapacity(ItemStack battery);
 }

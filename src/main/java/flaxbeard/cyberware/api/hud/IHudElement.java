@@ -1,49 +1,46 @@
 package flaxbeard.cyberware.api.hud;
 
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 
-public interface IHudElement
-{
-	public static enum EnumAnchorHorizontal
-	{
-		LEFT,
-		RIGHT;
-	}
-	
-	public static enum EnumAnchorVertical
-	{
-		TOP,
-		BOTTOM;
-	}
-	
-	public void render(EntityPlayer entityPlayer, ScaledResolution resolution, boolean isHUDjackAvailable, boolean isConfigOpen, float partialTicks);
-	
-	public boolean canMove();
-	
-	public void setX(int x);
-	public void setY(int y);
-	public int getX();
-	public int getY();
-	
-	public int getWidth();
-	public int getHeight();
-	
-	public boolean canHide();
-	public void setHidden(boolean hidden);
-	public boolean isHidden();
-	
-	public EnumAnchorHorizontal getHorizontalAnchor();
-	public void setHorizontalAnchor(EnumAnchorHorizontal anchor);
-	
-	public EnumAnchorVertical getVerticalAnchor();
-	public void setVerticalAnchor(EnumAnchorVertical anchor);
+public interface IHudElement {
+    enum AnchorHorizontal
+    {
+        LEFT,
+        RIGHT;
+    }
 
-	public void reset();
-	
-	public String getUniqueName();
+    enum AnchorVertical
+    {
+        TOP,
+        BOTTOM;
+    }
 
-	public void save(IHudSaveData data);
-	public void load(IHudSaveData data);
-	
+    void render(Player player, int scaledWidth, int scaledHeight, boolean isHUDjackAvailable, boolean isConfigOpen, float partialTicks);
+
+    boolean canMove();
+
+    void setX(int x);
+    void setY(int y);
+    int getX();
+    int getY();
+
+    int getWidth();
+    int getHeight();
+
+    boolean canHide();
+    void setHidden(boolean hidden);
+    boolean isHidden();
+
+    AnchorHorizontal getHorizontalAnchor();
+    void setHorizontalAnchor(AnchorHorizontal anchor);
+
+    AnchorVertical getVerticalAnchor();
+    void setVerticalAnchor(AnchorVertical anchor);
+
+    void reset();
+
+    String getUniqueName();
+
+    void save(IHudSaveData data);
+    void load(IHudSaveData data);
 }

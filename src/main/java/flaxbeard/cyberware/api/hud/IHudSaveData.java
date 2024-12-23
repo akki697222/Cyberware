@@ -1,14 +1,12 @@
 package flaxbeard.cyberware.api.hud;
 
-public interface IHudSaveData
-{
-	public void setString(String key, String s);
-	public void setInteger(String key, int i);
-	public void setBoolean(String key, boolean b);
-	public void setFloat(String key, float f);
-	
-	public String getString(String key);
-	public int getInteger(String key);
-	public boolean getBoolean(String key);
-	public float getFloat(String key);
+public interface IHudSaveData {
+    void setString(String key, String s);
+    void setInteger(String key, int i);
+    void setBoolean(String key, boolean b);
+    void setFloat(String key, float f);
+    String getString(String key);
+    int getInteger(String key);
+    boolean getBoolean(String key);
+    float getFloat(String key);
 }
